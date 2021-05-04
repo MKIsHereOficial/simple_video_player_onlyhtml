@@ -1,0 +1,308 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[OFFLINE] - GameName</title>
+
+    <link rel="stylesheet" href="resources/style.css">
+
+
+    <link rel="stylesheet" href="resources/status.css">
+    <script src="resources/status.js" defer></script>
+
+
+    <link rel="stylesheet" href="resources/menu.css">
+    
+    <link rel="stylesheet" href="resources/game.css">
+
+    <link rel="stylesheet" href="resources/loop.css">
+    <script src="resources/loop.js" defer></script>
+    
+    <link rel="stylesheet" href="resources/videoViewOverlay.css">
+    
+    <script src="resources/utils.js" defer></script>
+</head>
+<body>
+    <div class="menuContainer">
+        <ul class="menu">
+            <div class="menuOpener">
+                <h2 id="volumeView" style="font-weight: 300;">100%</h2>
+            </div>
+            <!-- <div class="div"></div> -->
+
+            <div class="options" style="margin-left: auto;">
+                <input class="loopOption" type="checkbox" name="loopOption" id="loopOption">
+                <label for="loopOption">Loop</label>
+            </div>
+
+            <div class="gameStatus">
+                <h1>GameName</h1>
+                <div class="gameStatus_circle">
+                    <div class="status-online status-circle" data-size="2.75vh"></div>
+                    <div class="status-offline status-circle status-disabled" data-size="2.75vh"></div>
+                </div>
+            </div>
+        </ul>
+    </div>
+
+    <div class="background"></div>
+
+    <div class="videos">
+        <video style="z-index: 1;" src="videos/CryAboutItLater.mp4" data-name="Cry About It Later" data-artist="Katy Perry, Luíza Sonza, Bruno Martini"></video>
+        <video style="z-index: 1;" src="videos/PhutHon.mp4" data-name="Phut Hón" data-artist="Zero Two"></video>
+    </div>
+
+    <div class="videoViewOverlay">
+        <div class="contentContainer">
+            <div id="videoProgress">
+                <span class="currentTime videoProgress">0:00</span>
+                <progress min="0" max="100" value="100"></progress>
+                <span class="duration videoProgress">0:00</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="videoTapOverlay paused">
+        <h1>Toque pra iniciar/resumir o vídeo!</h1>
+        <h4>Ou apenas pressione ENTER e o vídeo também iniciára</h4>
+        <h5>Use as setas para trocar de vídeo</h5>
+    </div>
+
+    <div class="controlsContainer">
+        
+    </div>
+
+    <script>
+        var songIndex = 1;
+        var song = document.querySelector('video');
+        var previousSong = null;
+        var songInfo = {};
+        var debug = false;
+        var resumePlaying = true;
+        var firstClick = false;
+
+        window.loop = true;
+
+        var background = document.querySelector('.background');
+
+
+        if (localStorage.getItem('songIndex')) {
+            songIndex = localStorage.getItem('songIndex');
+            setSong({index: songIndex});
+            previousSong = song;
+        } else {
+            setSong({index: songIndex});
+            previousSong = song;
+        }
+
+        function setSong({index = 1, playDirectly = null, songObject = null || {url: null, name: null, artist: null}}) {
+            if (song) {
+                previousSong = song;
+                song.style['z-index'] = 0;
+                song.pause();
+            }
+
+
+            
+            if (!resumePlaying) {
+                song.currentTime = 0;
+            } else if (resumePlaying && song.currentTime != 0 && song.currentTime != song.duration) {
+                localStorage.setItem(`${song.src}_currentTime`, song.currentTime);
+            }
+            songIndex = index;
+
+            if (resumePlaying) {
+                localStorage.setItem('songIndex', songIndex);
+            }
+
+            
+
+            if (songObject) {
+                return loadSong({songObject, playDirectly});
+            }
+
+            return loadSong({songObject: null, playDirectly});
+        }
+
+        function loadSong({songObject = null || {url: null}, playDirectly = null}) {
+            song = document.querySelector(`video:nth-child(${songIndex})`);
+            song.style['z-index'] = '5';
+
+            if (songObject && songObject.url) {
+                song.src = songObject.url;
+            }
+
+            if (localStorage.getItem(`${song.src}_currentTime`)) {
+                song.currentTime = localStorage.getItem(`${song.src}_currentTime`);
+            }
+            if (firstClick && previousSong && previousSong != song) {
+                if (playDirectly != false) {
+                    song.play();
+                } 
+            }
+
+            window.onmousewheel = (e) => {
+                if (!song) return;
+                var volume = song.volume;
+                if (e.wheelDeltaY >= 120) {
+                    song.muted = false;
+                    if (volume < 1) {
+                        song.volume = volume+(1/100);
+                        if (debug) console.dir(song.volume);
+                    }
+                } else if (e.wheelDeltaY <= -120) {
+                    if (volume > 0.009999999999999247) {
+                        song.muted = false;
+                        song.volume = volume-(1/100);
+                        if (debug) console.dir(song.volume);
+                    } else if (volume <= 0.009999999999999247 ) {
+                        song.muted = true;
+                    }
+                }
+
+                const volumeView = document.querySelector('#volumeView');
+                volumeView.textContent = `${!song.muted ? parseInt(song.volume * 100) + "%" : "MUTADO"}`
+            }
+
+            if (song.paused) {
+                background.style['z-index'] = 6;
+            }
+
+            if (song) {
+                const tapOverlay = document.querySelector('.videoTapOverlay');
+                song.onpause = () => {
+                    tapOverlay.classList.add("paused");
+                    background.style['z-index'] = 6;
+                    
+                    localStorage.setItem(`${song.src}_currentTime`, song.currentTime);
+                }
+                song.onplay = () => {
+                    tapOverlay.classList.remove("paused");
+                    background.style['z-index'] = 4;
+                }
+
+                tapOverlay.onclick = () => {
+                    if (song.paused) {
+                        song.play();
+                    } else {
+                        song.pause();
+                    }
+                }
+                song.onclick = () => {
+                    firstClick = true;
+                    if (song.paused) {
+                        song.play();
+                    } else {
+                        song.pause();
+                    }
+                }
+            }
+
+            window.onmouseup = (e) => {
+                if (!song) return;
+                if (e.which != 2) return;
+                if (song.muted) {
+                    song.muted = false;
+                } else {
+                    song.muted = true;
+                }
+            }
+
+            song.ontimeupdate = () => {
+                if (song.currentTime === song.duration && window.loop) {song.currentTime = 0; song.play();}
+                if (song.currentTime != 0 && song.currentTime != song.duration) localStorage.setItem(`${song.src}_currentTime`, song.currentTime);
+
+
+                const videoProgress = document.querySelector('#videoProgress');
+
+                videoProgress.querySelector('progress').value = song.currentTime;
+                videoProgress.querySelector('progress').max = song.duration;
+
+                const currentTimeFormatted = new FormattedTime(song.currentTime);
+                const durationFormatted = new FormattedTime(song.duration);
+
+                videoProgress.querySelector('.currentTime').textContent = currentTimeFormatted.format();
+                videoProgress.querySelector('.duration').textContent = durationFormatted.format();
+            }
+
+            loadSongInfo(songObject);
+        }
+        function loadSongInfo(songObject = {name: null, artist: null}) {
+            if (!song) return;
+            var onlySongName = true;
+            var name = song.dataset['name'], artist = song.dataset['artist'];
+            songInfo = {name, artist};
+
+            if (songObject && songObject.artist && songObject.name) {    
+                var name = songObject['name'], artist = songObject['artist'];
+                songInfo = {name, artist};
+            }
+
+            const nna = document.querySelector('.gameStatus h1');
+
+            nna.textContent = `${!onlySongName ? `${songInfo.artist} - ` : ""}${songInfo.name}`;
+            document.title = `${true ? `${songInfo.artist} - ` : "[OFFLINE] - "}${songInfo.name}`
+
+            return songInfo;
+        }
+
+        window.onkeydown = ({key, keyCode}) => {
+            if (keyCode === 32 && song) {
+                if (song.paused) {
+                    song.play();
+                } else {
+                    song.pause();
+                }
+            }
+
+            var playDirectly = false;
+            switch (key.toLowerCase()) {
+                case 'arrowleft': {
+                    firstClick = true;
+                    if (!song.isPaused) {
+                            playDirectly = true;
+                    } else {
+                        playDirectly = false;
+                    }
+                    if (songIndex > 1) {
+                        setSong({index: parseInt(songIndex)-1, playDirectly});
+                    } else if (songIndex < 2) {
+                        setSong({index: parseInt(songIndex)+1, playDirectly});
+                    }
+                    
+                    break;}
+                case 'arrowright':{
+                    firstClick = true;
+                    if (!song.isPaused) {
+                        playDirectly = true;
+                    } else {
+                        playDirectly = false;
+                    }
+
+                    
+                    if (songIndex < 2) {
+                        setSong({index: parseInt(songIndex)+1, playDirectly});
+                    } else if (songIndex > 1) {
+                        setSong({index: parseInt(songIndex)-1, playDirectly});
+                    }
+                    break;
+                }
+                case 'r': {
+                    song.currentTime = 0;
+                    break;
+                }
+                default:
+                    break;
+            }
+
+            const numberRegex = /[0-9]/;
+
+            if (`${key}`.match(numberRegex) && !key.startsWith("F")) {
+                song.currentTime = song.duration * parseFloat(`0.${parseInt(key)}`);
+            }
+        }
+
+    </script>
+</body>
+</html>

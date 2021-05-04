@@ -1,0 +1,41 @@
+
+.status-circle {
+    display: flex;
+    content: '';
+    aspect-ratio: 1 / 1;
+    width: var(--size, 2vh); height: var(--size);
+
+    border-radius: 50%;
+    color: var(--color, rgb(104, 104, 104));
+    background: currentColor;
+
+    border: .01px solid var(--color-op, rgba(104, 104, 104, .1));
+    box-shadow: 
+    0 0 1px currentColor,
+    -1px 1px 5px currentColor,
+    1px -1px 5px currentColor;
+}
+
+
+/* START: STATUS_COLORS */
+
+.status-online {
+    --color: rgb(109, 255, 109);
+    --color-op: rgba(109, 255, 109, .3);
+}
+
+.status-offline {
+    --color: rgb(104, 104, 104);
+    --color-op: rgba(104, 104, 104, .3);
+}
+
+.status-error {
+    --color: rgb(255, 131, 109);
+    --color-op: rgba(255, 131, 109, .3);
+}
+
+/* END: STATUS_COLORS */
+
+.status-disabled {
+    display: none;
+}

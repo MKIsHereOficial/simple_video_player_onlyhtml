@@ -1,0 +1,71 @@
+:root {
+    --column: 40px;
+}
+
+.gameContainer {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: black;
+}
+
+.videoTapOverlay {
+    position: fixed;
+    width: 100%;
+    height: 100vh;
+
+    top: 0;
+    left: 0;
+
+    z-index: 0;
+    background: rgba(0, 0, 0, .735);
+    backdrop-filter: blur(15px);
+    color: #eee;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.videoTapOverlay.paused {
+    z-index: 6;
+}
+
+/*
+.gameContainer {
+    display: grid;
+    
+    background: white;
+
+    width: calc(var(--column)*2*4);
+    height: 500px;
+    
+    grid-template-columns: calc(var(--column)*2) calc(var(--column)*2) calc(var(--column)*2) calc(var(--column)*2);
+    grid-template-rows: calc(400px/4) calc(400px/4) calc(400px/4) calc(400px/4);
+}
+
+.touchableTile {
+    content: '';
+    background: black;
+    width: var(--column*2);
+    min-height: 15px;
+    border: 1px solid gray;
+}
+
+.touchableTile:hover {
+    filter: invert(10%);
+}
+.touchableTile:active {
+    filter: invert(30%);
+}
+*/

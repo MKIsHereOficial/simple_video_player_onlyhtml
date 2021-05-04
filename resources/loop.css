@@ -1,0 +1,18 @@
+:root {
+    --unchecked-color: #bbb;
+    --checked-color: rgb(119, 255, 119);
+}
+
+#loopOption {
+    appearance: none;
+    visibility: none;
+}
+
+label[for='loopOption'] {
+    color: var(--unchecked-color);
+    text-shadow: 0 0 1vh currentColor,
+    0 0 1vh currentColor;
+}
+label[for='loopOption'].checked {
+    color: var(--checked-color);
+}
